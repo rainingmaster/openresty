@@ -35,6 +35,7 @@ linux-s390x: &linux-s390x
             - mercurial 
             - libpq-dev
   install:
+    - git clone https://github.com/nginx/njs.git ../njs
     - sudo cpanm --notest Test::Nginx IPC::Run3 > build.log 2>&1 || (cat build.log && exit 1)
     - if [ ! -f download-cache/openssl-$OPENSSL_VER.tar.gz ]; then wget -P download-cache https://www.openssl.org/source/openssl-$OPENSSL_VER.tar.gz; fi
     - tar zxf download-cache/openssl-$OPENSSL_VER.tar.gz
@@ -48,7 +49,7 @@ linux-s390x: &linux-s390x
   script:
     - util/mirror-tarballs > build.log 2>&1 || (cat build.log && exit 1)
     - cd openresty-*
-    - ./configure --prefix=$OPENRESTY_PREFIX --with-cc-opt="-I$PCRE_INC -I$OPENSSL_INC" --with-ld-opt="-L$PCRE_LIB -L$OPENSSL_LIB -Wl,-rpath,$PCRE_LIB:$OPENSSL_LIB" --with-pcre-jit --with-http_ssl_module --with-debug -j$JOBS > build.log 2>&1 || (cat build.log && exit 1)
+    - ./configure --prefix=$OPENRESTY_PREFIX --with-cc-opt="-I$PCRE_INC -I$OPENSSL_INC" --with-ld-opt="-L$PCRE_LIB -L$OPENSSL_LIB -Wl,-rpath,$PCRE_LIB:$OPENSSL_LIB" --with-pcre-jit --with-http_ssl_module --with-debug --with-compat --add-dynamic-module=../../njs/nginx -j$JOBS > build.log 2>&1 || (cat build.log && exit 1)
     - make -j$JOBS > build.log 2>&1 || (cat build.log && exit 1)
     - sudo make install > build.log 2>&1 || (cat build.log && exit 1)
     - cd ..
@@ -86,6 +87,7 @@ jobs:
           env: OPENSSL_VER=1.1.1c OPENSSL_PATCH_VER=1.1.1c       
           
 install:
+  - git clone https://github.com/nginx/njs.git ../njs
   - sudo cpanm --notest Test::Nginx IPC::Run3 > build.log 2>&1 || (cat build.log && exit 1)
   - if [ ! -f download-cache/pcre-$PCRE_VER.tar.gz ]; then wget -P download-cache http://ftp.cs.stanford.edu/pub/exim/pcre/pcre-$PCRE_VER.tar.gz; fi
   - if [ ! -f download-cache/openssl-$OPENSSL_VER.tar.gz ]; then wget -P download-cache https://www.openssl.org/source/openssl-$OPENSSL_VER.tar.gz; fi
@@ -107,7 +109,7 @@ install:
 script:
   - util/mirror-tarballs > build.log 2>&1 || (cat build.log && exit 1)
   - cd openresty-*
-  - ./configure --prefix=$OPENRESTY_PREFIX --with-cc-opt="-I$PCRE_INC -I$OPENSSL_INC" --with-ld-opt="-L$PCRE_LIB -L$OPENSSL_LIB -Wl,-rpath,$PCRE_LIB:$OPENSSL_LIB" --with-pcre-jit --with-http_ssl_module --with-debug -j$JOBS > build.log 2>&1 || (cat build.log && exit 1)
+  - ./configure --prefix=$OPENRESTY_PREFIX --with-cc-opt="-I$PCRE_INC -I$OPENSSL_INC" --with-ld-opt="-L$PCRE_LIB -L$OPENSSL_LIB -Wl,-rpath,$PCRE_LIB:$OPENSSL_LIB" --with-pcre-jit --with-http_ssl_module --with-debug --with-compat --add-dynamic-module=../../njs/nginx -j$JOBS > build.log 2>&1 || (cat build.log && exit 1)
   - make -j$JOBS > build.log 2>&1 || (cat build.log && exit 1)
   - sudo make install > build.log 2>&1 || (cat build.log && exit 1)
   - cd ..
